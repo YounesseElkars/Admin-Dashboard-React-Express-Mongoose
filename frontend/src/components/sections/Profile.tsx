@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -9,9 +8,9 @@ import Container from '../ui/Container';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useToast } from '../ui/use-toast';
-import { useRegisterMutation } from '@/redux/features/usersApiSlice';
+import { useUpdateUserMutation } from '@/redux/features/usersApiSlice';
 import { UseAppSelector } from '@/redux/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { setCreddentials } from '@/redux/features/authSlice';
 import { ReloadIcon } from '@radix-ui/react-icons';
 
@@ -47,26 +46,27 @@ const FormSchema = z
     path: ['confirmPassword'],
   });
 
-const Register = () => {
-  const navigate = useNavigate();
+const Profile = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
-  const [register, { isLoading }] = useRegisterMutation();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+
+  const [update, { isLoading }] = useUpdateUserMutation();
 
   const { userInfo } = UseAppSelector((store) => store.auth);
 
-  useEffect(() => {
-    if (userInfo) {
-      navigate('/');
-    }
-  }, [navigate, userInfo]);
+  // useEffect(() => {
+  //   setName(userInfo.name);
+  //   setEmail(userInfo.email);
+  // }, [userInfo.name, userInfo.email]);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      name: '',
-      email: '',
+      name: userInfo.name,
+      email: userInfo.email,
       password: '',
       confirmPassword: '',
     },
@@ -74,13 +74,19 @@ const Register = () => {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
-      const res = await register({
+      const res = await update({
         name: data.name,
         email: data.email,
         password: data.password,
       }).unwrap();
 
       dispatch(setCreddentials({ ...res }));
+
+      toast({
+        variant: 'default',
+        title: 'Success',
+        description: 'information changed Successfuly',
+      });
     } catch (err: any) {
       toast({
         variant: 'destructive',
@@ -98,7 +104,7 @@ const Register = () => {
             onSubmit={form.handleSubmit(onSubmit)}
             className=" bg-primary/5  mx-auto mt-20 w-full space-y-6 rounded-md px-10 py-20 shadow-lg sm:w-2/3"
           >
-            <h1 className="w-full text-center text-3xl font-semibold">Register</h1>
+            <h1 className="w-full text-center text-3xl font-semibold">Update Profile</h1>
 
             <FormField
               control={form.control}
@@ -162,13 +168,6 @@ const Register = () => {
             ) : (
               <Button type="submit">Submit</Button>
             )}
-
-            <h1 className="text-sm">
-              Already have an account ?
-              <Link to={'/login'}>
-                <Button variant={'link'}>Login</Button>
-              </Link>
-            </h1>
           </form>
         </Form>
       </Container>
@@ -176,4 +175,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Profile;

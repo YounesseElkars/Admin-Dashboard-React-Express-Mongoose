@@ -6,15 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import Container from '../ui/Container';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useLoginMutation } from '@/redux/features/usersApiSlice';
+import { setCreddentials } from '@/redux/features/authSlice';
+import { UseAppSelector } from '@/redux/store';
+import { useEffect } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import { ReloadIcon } from '@radix-ui/react-icons';
 
 const FormSchema = z.object({
-  username: z
+  email: z
     .string()
     .min(2, {
-      message: 'Username must be at least 2 characters.',
+      message: 'email must be at least 2 characters.',
     })
-    .max(50, { message: 'Username max characters is 50 .' }),
+    .max(50, { message: 'email max characters is 50 .' }),
   password: z
     .string()
     .min(2, {
@@ -24,16 +31,43 @@ const FormSchema = z.object({
 });
 
 const Login = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+
+  const [login, { isLoading }] = useLoginMutation();
+
+  const { userInfo } = UseAppSelector((store) => store.auth);
+
+  useEffect(() => {
+    if (userInfo) {
+      navigate('/');
+    }
+  }, [navigate, userInfo]);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      username: '',
-      password: '',
+      email: 'adminsss2s@live.fr',
+      password: '123456',
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data.username);
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    try {
+      const res = await login({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
+
+      dispatch(setCreddentials({ ...res }));
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.data.message,
+      });
+    }
   }
 
   return (
@@ -48,12 +82,12 @@ const Login = () => {
 
             <FormField
               control={form.control}
-              name="username"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Username" {...field} />
+                    <Input placeholder="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -72,7 +106,16 @@ const Login = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+
+            {isLoading ? (
+              <Button disabled>
+                <ReloadIcon className="mr-1 h-2 w-2 animate-spin" />
+                Loading
+              </Button>
+            ) : (
+              <Button type="submit">Submit</Button>
+            )}
+
             <h1 className="text-sm">
               You dont have an account ?
               <Link to={'/register'}>
