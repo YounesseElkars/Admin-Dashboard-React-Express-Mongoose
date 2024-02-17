@@ -16,3 +16,12 @@
 - /Login (Public)
 - /Register (Public)
 - /Profile (Private)
+
+
+### Preview
+
+![Alt Text](preview/1.png)
+
+![Alt Text](preview/2.png)
+
+![Alt Text](preview/3.png)
