@@ -11,7 +11,7 @@ connectDB();
 const app: Express = express();
 const port = process.env.PORT || 4000;
 
-// cookie parser   middleware
+// cookie parser middleware
 app.use(cookieParser());
 
 // body parser middleware

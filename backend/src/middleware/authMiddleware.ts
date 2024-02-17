@@ -12,7 +12,6 @@ declare module 'express' {
 const protect = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   let token = '';
   token = req.cookies.jwt;
-
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;

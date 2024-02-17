@@ -5,7 +5,9 @@ import generateToken from '../utils/generateToken';
 
 // @desc      auth user & set token | @route     POST /api/users/auth | @access    public
 const authUser = asyncHandler(async (req: Request, res: Response) => {
+
   const { email, password }: IUser = req.body;
+  
   const userFound = await userModel.findOne({ email: email });
 
   if (userFound && (await userFound.matchPasswords(password))) {
@@ -78,6 +80,7 @@ const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
 
 // @desc      update user profile | @route     PUT /api/users/profile | @access    private
 const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
+
   const user = await userModel.findById(req.user._id);
 
   if (user) {
@@ -100,6 +103,7 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     message: 'Update User Profile',
   });
+  
 });
 
 export { authUser, updateUserProfile, registerUser, logoutUser, getUserProfile };
